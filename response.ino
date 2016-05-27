@@ -1,36 +1,9 @@
-/*
-  Button
-
- Turns on and off a light emitting diode(LED) connected to digital
- pin 13, when pressing a pushbutton attached to pin 2.
-
-
- The circuit:
- * LED attached from pin 13 to ground
- * pushbutton attached to pin 2 from +5V
- * 10K resistor attached to pin 2 from ground
-
- * Note: on most Arduinos there is already an LED on the board
- attached to pin 13.
-
-
- created 2005
- by DojoDave <http://www.0j0.org>
- modified 30 Aug 2011
- by Tom Igoe
-
- This example code is in the public domain.
-
- http://www.arduino.cc/en/Tutorial/Button
- */
-
-// constants won't change. They're used here to
 // set pin numbers:
 const int buttonPin[5] = {2,3,4,5,6};  // the number of the pushbutton pin
 const int ledPin[5] = {13, 9, 10, 11, 12}; // the number of the LED pin
 
-// variables will change:
-int buttonState = 0;         // variable for reading the pushbutton status
+int waitingTime = 30000;
+int serial = 1000;
 
 void setup() {
   // initialize the Serial port:
@@ -50,8 +23,37 @@ void setup() {
   randomSeed(analogRead(0));
 }
 
-void loop() {  
-  for (int i = 0; i < 10; i++) {
+void loop() {
+  Serial.print("\npush red button and start test #");
+  Serial.println(serial);
+  serial++;
+  
+  int n = 1;
+  int cnt = 0;
+  while (true) {
+    digitalWrite(ledPin[n], HIGH);
+
+    // wait
+    for (cnt = 0; cnt < waitingTime; cnt++) {
+      if (digitalRead(buttonPin[0]) == LOW) break;
+    }
+    // confirm if pressed
+    if (cnt != waitingTime) {
+      digitalWrite(ledPin[n], LOW);
+      while (digitalRead(buttonPin[0]) == LOW);
+      break;
+    }
+    
+    digitalWrite(ledPin[n], LOW);
+    n++;
+    if (n == 5) n = 1;
+  }
+
+  // start test
+  Serial.println("no,question,input,result,time[ms]");
+  for (int i = 0; i < 11; i++) {
+    Serial.print(i);
+    Serial.print(',');
     digitalWrite(ledPin[0], HIGH);
     delay(100);
     digitalWrite(ledPin[0], LOW);
@@ -66,7 +68,8 @@ void loop() {
     delay(700);
     
     int r = random(1,5);
-    Serial.println(r);
+    Serial.print(r);
+    Serial.print(',');
     digitalWrite(ledPin[r], HIGH);
     
     unsigned long time1 = millis();    
@@ -78,10 +81,18 @@ void loop() {
     }
     digitalWrite(ledPin[r], LOW);
     unsigned long time2 = millis();
-    Serial.println(n);
+    Serial.print(n);
+    Serial.print(',');
+    if (n == r) {
+      Serial.print('o');
+      Serial.print(',');
+    }
+    else {
+      Serial.print('x');
+      Serial.print(',');
+    }
     Serial.println(time2-time1);
     delay(1000);
   }
-  while (true);
 }
 
